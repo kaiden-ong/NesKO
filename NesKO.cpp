@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <string>
 #include <SDL2/SDL.h>
-#include "src/nes.h"
+#include "nes/nes.h"
 using namespace std;
 
 typedef struct {
