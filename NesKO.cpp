@@ -2,45 +2,13 @@
 #include <filesystem>
 #include <string>
 #include <SDL2/SDL.h>
+#include "src/nes.h"
 using namespace std;
 
 typedef struct {
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 } sdl_t;
-
-typedef enum {
-	RUNNING,
-	PAUSED,
-	QUIT
-} nes_state_t;
-
-typedef struct {
-	int width;
-	int height;
-	int scale;
-	bool outline;
-} config_t;
-
-typedef struct {
-	nes_state_t state;
-	uint8_t ram[0xFFFF];
-	bool display[256*240];
-	uint16_t PC; // Program Counter
-	uint8_t stack_pointer; 
-	uint8_t A; // Accumulator
-	uint8_t X; // Index Register
-	uint8_t Y; // Index Register
-	const char *romName;
-} nes_t;
-
-bool init_config(config_t *config, int argc, char **argv) {
-	config->width = 256;
-	config->height = 240;
-	config->scale = 4;
-	config->outline = true;
-	return true;
-}
 
 bool init_sdl(const config_t config, sdl_t* sdl) {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -63,22 +31,8 @@ bool init_sdl(const config_t config, sdl_t* sdl) {
 	return true;
 }
 
-bool init_nes(nes_t *nes, const config_t config) {
-	cout << "Initializing NES..." << endl;
-	for (int i = 0; i < sizeof(nes->ram); i++) {
-		nes->ram[i] = 0;
-	}
-	cout << "Initialized RAM." << endl;
-	for (int i = 0; i < config.width * config.height; i++) {
-		nes->display[i] = 0;
-	}
-	cout << "Initialized Display with size: " << config.width * config.height << endl;
-	nes->state = RUNNING;
-	cout << "set state" << endl;
-	return true;
-}
 
-void update_screen(SDL_Renderer* renderer, const config_t config, const nes_t nes) {
+void update_screen(SDL_Renderer* renderer, const config_t config, NES nes) {
 	SDL_Rect rect = {0, 0, config.scale, config.scale};
 	for (uint32_t i = 0; i < sizeof nes.display; i++) {
 		rect.x = (i % config.width) * config.scale;
@@ -96,7 +50,7 @@ void update_screen(SDL_Renderer* renderer, const config_t config, const nes_t ne
 	SDL_RenderPresent(renderer);
 }
 
-void handle_input(nes_t *nes) {
+void handle_input(NES *nes) {
 	SDL_Event windowEvent;
 	while (SDL_PollEvent(&windowEvent)) {
 		switch (windowEvent.type) {
@@ -116,33 +70,26 @@ void final_cleanup(sdl_t sdl) {
 }
 
 int main(int argc, char **argv) {
-	config_t config;
-	if (!init_config(&config, argc, argv)) {
-	exit(EXIT_FAILURE);
-	}
+	NES nes;
 
-	cout << "Set configs" << endl;
+	if (!nes.init_nes()) {
+		cout << "Failed to initialize NES" << endl;
+		exit(EXIT_FAILURE);
+	}
+	cout << "Init NES" << endl;
 
 	sdl_t sdl;
-	if (!init_sdl(config, &sdl)) {
+	if (!init_sdl(nes.config, &sdl)) {
 		exit(EXIT_FAILURE);
 	}
 
 	cout << "Set up SDL" << endl;
 
-	nes_t nes;
-	if (!init_nes(&nes, config)) {
-		cout << "Failed to initialize NES" << endl;
-		final_cleanup(sdl);
-		exit(EXIT_FAILURE);
-	}
-
-	cout << "Init NES" << endl;
 
 	SDL_Event windowEvent;
 	while (nes.state == RUNNING) {
 		handle_input(&nes);
-		update_screen(sdl.renderer, config, nes);
+		update_screen(sdl.renderer, nes.config, nes);
 		SDL_Delay(8); // about 120 fps: 1000ms / 8ms delay
 	}
 
