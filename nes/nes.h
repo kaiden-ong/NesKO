@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "ppu.h"
 
 typedef enum {
 	RUNNING,
@@ -19,6 +20,7 @@ class NES {
         config_t config;
         bool display[256*240];
         CPU cpu;
-        NES() : cpu() {}
+        PPU ppu;
+        NES() : cpu(), ppu() {}
         bool init_nes();
 };

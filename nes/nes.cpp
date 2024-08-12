@@ -7,6 +7,10 @@ bool NES::init_nes() {
         std::cout << "Failed to init CPU" << std::endl;
         return false;
     }
+    if (!ppu.initialize()) {
+        std::cout << "Failed to init PPU" << std::endl;
+        return false;
+    }
 
     // display init
     config.width = 256;

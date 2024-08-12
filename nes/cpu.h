@@ -16,4 +16,6 @@ class CPU {
 
         CPU(); // create a cpu object
         bool initialize(); // handle cpu initialize functionality like setting registers
+        void emulate_instructions();
+        void decode_and_execute(uint8_t);
 };

@@ -76,14 +76,14 @@ int main(int argc, char **argv) {
 		cout << "Failed to initialize NES" << endl;
 		exit(EXIT_FAILURE);
 	}
-	cout << "Init NES" << endl;
+	cout << "NES init done..." << endl;
 
 	sdl_t sdl;
 	if (!init_sdl(nes.config, &sdl)) {
 		exit(EXIT_FAILURE);
 	}
 
-	cout << "Set up SDL" << endl;
+	cout << "SDL init done..." << endl;
 
 
 	SDL_Event windowEvent;
